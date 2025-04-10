@@ -74,19 +74,19 @@ export default function AdminDashboard() {
 
   // Edit song
   
-  // const handleEditSong = async (id) => {
-  //   const songRef = doc(db, 'songs', id );
-  //   await updateDoc(songRef,
-  //   {
-  //     title: newTitle,
-  //     artist: newArtist,
+  const handleEditSong = async (id) => {
+    const songRef = doc(db, 'songs', id );
+    await updateDoc(songRef,
+    {
+      title: newTitle,
+      artist: newArtist,
 
-  //   });
-  //   setEditingId(null);
-  //   setNewTitle('');
-  //   setNewArtist('');
-  //   fetchData();
-  // };
+    });
+    setEditingId(null);
+    setNewTitle('');
+    setNewArtist('');
+    fetchData();
+  };
   
 
   // Delete song
