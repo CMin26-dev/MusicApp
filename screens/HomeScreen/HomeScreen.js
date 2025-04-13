@@ -200,12 +200,12 @@ const HomeScreen = () => {
       <View style={{ paddingHorizontal: 20, paddingTop: 20, marginBottom: 16 }}>
       
         <View style={styles.topBar}>
-          <Text style={styles.title}>SOUNDIFY</Text>         {" "}
+          <Text style={styles.title}>SOUNDIFY</Text>
           <TouchableOpacity
             onPress={() => navigation.navigate("LogoutConfirm")}
           >
            
-            <Ionicons name="person-circle-outline" size={28} color="#fff" />   
+            <Ionicons name="person-circle-outline" size={28} color="#fff" />
             
           </TouchableOpacity>
          
