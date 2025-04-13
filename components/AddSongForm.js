@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet,TouchableOpacity } from "react-native";
 import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
-import { db } from "../../MUSIC/configs/firebaseConfig";
+import { db } from "../configs/firebaseConfig";
 
 // const AddSongForm = () => {
 //   const [songs, setSongs] = useState([]);
