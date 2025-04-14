@@ -11,7 +11,7 @@ import LogoutConfirmScreen from "../screens/LogoutConfirmScreen/LogoutConfirmScr
 import { AppRegistry } from 'react-native';
 
 const Stack = createStackNavigator();
-const ADMIN_EMAIL = "trancongminh260602@gmail.com"
+const ADMIN_EMAIL = "admin@gmail.com"
    
 export default function Index() {
   const [user, setUser] = useState(null);
