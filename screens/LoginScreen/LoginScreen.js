@@ -3,7 +3,9 @@ import { View, Text, TextInput, Button, Alert,TouchableOpacity, StyleSheet, Imag
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
 
-const ADMIN_EMAIL = "trancongminh260602@gmail.com" ; // Change this
+const ADMIN_EMAIL = "trancongminh260602@gmail.com"
+ 
+
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");

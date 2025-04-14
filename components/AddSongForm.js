@@ -38,11 +38,12 @@ const AddSongForm = ({
   setNewTitle,
   newArtist,
   setNewArtist,
-  
+  newUrl,
+  setNewUrl,
   onEditDone
 }) => {
   const handleSave = async () => {
-    if (!newTitle || !newArtist ) return;
+    if (!newTitle || !newArtist || !newUrl ) return;
 
     if (editingId) {
       // 👉 Nếu có ID => đang chỉnh sửa
@@ -57,7 +58,7 @@ const AddSongForm = ({
       await addDoc(collection(db, 'songs'), {
         title: newTitle,
         artist: newArtist,
-        
+        url: newUrl,
       });
     }
 
@@ -113,6 +114,13 @@ const AddSongForm = ({
   placeholder="Tác giả"
   value={newArtist}
   onChangeText={setNewArtist}
+  placeholderTextColor="#aaa"
+/>
+<TextInput
+  style={styles.input}
+  placeholder="URL"
+  value={newUrl}
+  onChangeText={setNewUrl}
   placeholderTextColor="#aaa"
 />
 

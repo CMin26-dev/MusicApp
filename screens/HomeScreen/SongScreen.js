@@ -123,7 +123,7 @@ const SongScreen = () => {
           <Ionicons
             name={currentSongUrl === item.url && playbackStatus[item.url]?.isPlaying ? 'pause-circle-outline' : 'play-circle-outline'}
             size={30}
-            color="#ffa500"
+            color="#dc6353"
           />
         </TouchableOpacity>
         

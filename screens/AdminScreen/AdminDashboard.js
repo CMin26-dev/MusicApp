@@ -40,7 +40,13 @@ export default function AdminDashboard() {
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
   const [editingId, setEditingId] = useState(null);
-
+  const ADMIN_EMAIL = [
+    "trancongminh260602@gmail.com",
+    "admin1@gmail.com",
+    "admin2@gmail.com",
+    "admin3@gmail.com",
+    "admin4@example.com"
+  ]; 
   
   
   // Fetch data

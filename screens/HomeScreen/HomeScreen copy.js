@@ -122,7 +122,7 @@ const HomeScreen = () => {
         <View key={song.id} style={{ marginVertical: 10 }}>
           <Text style={{ color: "#fff" }}>{song.title} - {song.artist}</Text>
           <TouchableOpacity onPress={() => playSong(song.url,song.id)}>
-            <Text style={{ color: "#ffa500" }}>Play</Text>
+            <Text style={{ color: " #dc6353" }}>Play</Text>
           </TouchableOpacity>
         </View>
       ))}

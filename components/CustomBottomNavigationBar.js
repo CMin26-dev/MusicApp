@@ -25,12 +25,12 @@ const CustomBottomNavigationBar = ({ onTabChange, activeTab }) => {
           <Ionicons
             name={activeTab === tab.route ? tab.activeIcon : tab.icon}
             size={24}
-            color={activeTab === tab.route ? '#ffa500' : '#fff'}
+            color={activeTab === tab.route ? '#dc6353' : '#fff'}
           />
           <Text
             style={[
               styles.label,
-              { color: activeTab === tab.route ? '#ffa500' : '#fff' },
+              { color: activeTab === tab.route ? '#dc6353' : '#fff' },
             ]}
           >
             {tab.name}
