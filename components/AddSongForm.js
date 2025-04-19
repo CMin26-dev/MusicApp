@@ -3,47 +3,18 @@ import { View, Text, TextInput, Button, StyleSheet,TouchableOpacity } from "reac
 import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
 import { db } from "../configs/firebaseConfig";
 
-// const AddSongForm = () => {
-//   const [songs, setSongs] = useState([]);
-//   const [users, setUsers] = useState([]);
-//   const [title, setTitle] = useState("");
-//   const [artist, setArtist] = useState("");
-//   const [url,setUrl]=useState("")
-
-//   const handleAddSong = async () => {
-//     if (!title || !artist  || !url) return alert("Please fill in all fields");
-//    try{
-//       await addDoc(collection(db, "songs"), {
-//         // id,
-//         title,
-//         artist,
-//         url,
-       
-//       });
-//       alert("Song added successfully!");
-//       // setId("")
-//       setTitle("");
-//       setArtist("");
-//       setUrl("");
-//     }catch{
-//       alert("Error adding song: " + error.message);
-
-//     }
-
-//   };
-
 const AddSongForm = ({
   editingId,
   newTitle,
   setNewTitle,
   newArtist,
   setNewArtist,
-  newUrl,
-  setNewUrl,
+  newGener,
+  setNewGener,
   onEditDone
 }) => {
   const handleSave = async () => {
-    if (!newTitle || !newArtist || !newUrl ) return;
+    if (!newTitle || !newArtist || !newGener ) return;
 
     if (editingId) {
       // 👉 Nếu có ID => đang chỉnh sửa
@@ -51,14 +22,14 @@ const AddSongForm = ({
       await updateDoc(songRef, {
         title: newTitle,
         artist: newArtist,
-        url: newUrl
+        gener: newGener
       });
     } else {
       // 👉 Nếu không có ID => thêm mới
       await addDoc(collection(db, 'songs'), {
         title: newTitle,
         artist: newArtist,
-        url: newUrl,
+        gener: newGener,
       });
     }
 
@@ -66,41 +37,6 @@ const AddSongForm = ({
   };
 
   return (
-//     <View style={styles.formContainer}>
-//       {/* <Text style={styles.label}>ID</Text>
-//       <TextInput style={styles.input} value={id} onChangeText={setId} /> */}
-//       <TextInput style={styles.input} placeholder="Song Title" value={title} onChangeText={setTitle} />
-//       <TextInput style={styles.input} placeholder="Artist" value={artist} onChangeText={setArtist} />
-//       <TextInput style={styles.input} placeholder="URL" value={url} onChangeText={setUrl} />
-//       <TouchableOpacity style={styles.button} onPress={handleAddSong}>
-//         <Text style={styles.buttonText}>Add Song</Text>
-//       </TouchableOpacity> 
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   formContainer: { padding: 16,  gap:5 },
-//   label: { color: "#fff", marginTop: 10 },
-//   input: {
-//     backgroundColor: "#333",
-//     color: "#fff",
-//     padding: 10,
-//     borderRadius: 8,
-//     marginTop: 5,
-//   },
-//   button: {
-//     backgroundColor: "#dc6353",
-//     padding: 12,
-//     borderRadius: 10,
-//     alignItems: "center",
-//     marginTop: 18
-//   },
-//   buttonText: {
-//     color: "#fff",
-//     fontWeight: "bold"
-//   },
-// });
 <View style={styles.container}>
 <TextInput
   style={styles.input}
@@ -109,6 +45,7 @@ const AddSongForm = ({
   onChangeText={setNewTitle}
   placeholderTextColor="#aaa"
 />
+
 <TextInput
   style={styles.input}
   placeholder="Tác giả"
@@ -118,9 +55,9 @@ const AddSongForm = ({
 />
 <TextInput
   style={styles.input}
-  placeholder="URL"
-  value={newUrl}
-  onChangeText={setNewUrl}
+  placeholder="Thể Loại"
+  value={newGener}
+  onChangeText={setNewGener}
   placeholderTextColor="#aaa"
 />
 

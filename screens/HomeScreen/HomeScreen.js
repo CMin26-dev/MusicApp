@@ -86,7 +86,7 @@ const HomeScreen = () => {
           style={styles.addButton}
           onPress={() => handleAddToPlaylist(item)}
         >
-          <Ionicons name="add-circle-outline" size={24} color="#ffa500" />
+          <Ionicons name="add-circle-outline" size={24} color="#dc6353" />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   songTitle: {
-    color: "#ffa500",
+    color: "#dc6353",
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 4,

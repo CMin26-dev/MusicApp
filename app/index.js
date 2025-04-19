@@ -49,7 +49,7 @@ export default function Index() {
       <Stack.Screen name="LogoutConfirm" component={LogoutConfirmScreen} />
       <Stack.Screen name="SongScreen" component={SongScreen} />
       <Stack.Screen name="PlaylistScreen" component={PlaylistScreen} />
-      <SongScreen name="UserManagement" component ={UserManagement}/>
+      <Stack.Screen name="UserManagement" component ={UserManagement}/>
     </Stack.Navigator>
 
       );

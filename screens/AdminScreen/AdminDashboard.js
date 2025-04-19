@@ -15,6 +15,7 @@ export default function AdminDashboard() {
   // const [users, setUsers] = useState([]);
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
+  const [newGener, setNewGener] = useState('');
   const [editingId, setEditingId] = useState(null);
   const ADMIN_EMAIL = "trancongminh260602@gmail.com";
 
@@ -57,11 +58,12 @@ export default function AdminDashboard() {
     {
       title: newTitle,
       artist: newArtist,
-
+      gener: newGener,
     });
     setEditingId(null);
     setNewTitle('');
     setNewArtist('');
+    setNewGener('');
     fetchData();
   };
   
@@ -119,6 +121,7 @@ const handleLogout = async () => {
     setEditingId(null);
     setNewTitle('');
     setNewArtist('');
+    setNewGener('');
     fetchData(); // gọi lại danh sách sau khi chỉnh
   }}/>
 
@@ -129,7 +132,7 @@ const handleLogout = async () => {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.itemBox}>
-            <Text style={styles.itemText}>{item.title} - {item.artist}</Text>
+            <Text style={styles.itemText}>{item.title} - {item.artist} -{item.gener}</Text>
             <View style={styles.row}>
               <TouchableOpacity onPress={() => {
                 setEditingId(item.id);
