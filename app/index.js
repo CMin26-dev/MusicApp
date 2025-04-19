@@ -9,8 +9,9 @@ import HomeScreen from "../screens/HomeScreen/HomeScreen";
 import AdminDashboard from "../screens/AdminScreen/AdminDashboard"
 import LogoutConfirmScreen from "../screens/LogoutConfirmScreen/LogoutConfirmScreen";
 import { AppRegistry } from 'react-native';
-import UserManagement from '../screens/UserManagement';
-
+import SongScreen from "../screens/HomeScreen/SongScreen";
+import PlaylistScreen from "../screens/HomeScreen/PlaylistScreen";
+import UserManagement from "../screens/UserManagement";
 const Stack = createStackNavigator();
 const ADMIN_EMAIL = "admin@gmail.com"
    
@@ -46,8 +47,9 @@ export default function Index() {
         </>
       )}
       <Stack.Screen name="LogoutConfirm" component={LogoutConfirmScreen} />
-      
-    <Stack.Screen name="UserManagement" component={UserManagement} />
+      <Stack.Screen name="SongScreen" component={SongScreen} />
+      <Stack.Screen name="PlaylistScreen" component={PlaylistScreen} />
+      <SongScreen name="UserManagement" component ={UserManagement}/>
     </Stack.Navigator>
 
       );
