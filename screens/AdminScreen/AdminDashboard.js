@@ -8,7 +8,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../../configs/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import AddSongForm from '../../components/AddSongForm';
-
+import UserManagement from '../../screens/UserManagement';
 
 export default function AdminDashboard() {
   const [songs, setSongs] = useState([]);
@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [newGener, setNewGener] = useState('');
   const [editingId, setEditingId] = useState(null);
   const ADMIN_EMAIL = "trancongminh260602@gmail.com";
+  const [selectedTab, setSelectedTab] = useState('songs');
 
   
   
@@ -111,6 +112,26 @@ const handleLogout = async () => {
     
     </View>
     <Text style={styles.header}>AdminDashboard</Text>
+    <View style={styles.menu}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => setSelectedTab('songs')}
+        >
+          <Ionicons name="musical-notes" size={20} 
+          style={selectedTab === 'songs' ? styles.activeIcon : styles.menuText}    />
+          <Text style={styles.menuText}>Songs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('UserManagement')}
+        >
+          <Ionicons name="people" size={20}   style={selectedTab === 'user' ? styles.activeIcon : styles.menuText}  />
+          <Text style={styles.menuText}>Users</Text>
+        </TouchableOpacity>
+       
+      </View>
+      
       {/* Add song */}
       <AddSongForm  editingId={editingId}
   newTitle={newTitle}
@@ -171,9 +192,9 @@ const handleLogout = async () => {
           </View>
         )}
       /> */}
-       <TouchableOpacity style={styles.buttonuser} onPress={() => navigation.navigate('UserManagement')}>
+       {/* <TouchableOpacity style={styles.buttonuser} onPress={() => navigation.navigate('UserManagement')}>
           <Text style={styles.buttonText}>User</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
     </View>
   );
 }
@@ -251,7 +272,29 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row"
-  }
+  },
+  menu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 4,
+    backgroundColor: '#333',
+  },
+  menuItem: {
+    alignItems: 'center',
+  
+  },
+  menuText: {
+    color: '#fff',
+    marginTop: 2,
+    fontSize: 14,
+  },
+  activeMenuText: {
+    color: '#dc6353',
+    fontWeight: 'bold',
+  },
+  activeIcon: {
+    color: '#dc6353',
+  },
 });
 // import React, { useState } from 'react';
 // import { View, Text, TouchableOpacity, StyleSheet,FlatList } from 'react-native';
@@ -277,37 +320,7 @@ const styles = StyleSheet.create({
 //         <TouchableOpacity onPress={() => setActiveTab('songs')} style={styles.tab}>
 //           <Text style={styles.tabText}>Songs</Text>
 //         </TouchableOpacity>
-   
-//     <Text style={styles.subHeader}>Songs</Text>
-//       <FlatList
-//         data={songs}
-//         keyExtractor={item => item.id}
-//         renderItem={({ item }) => (
-//           <View style={styles.itemBox}>
-//             <Text style={styles.itemText}>{item.title} - {item.artist}</Text>
-//             <View style={styles.row}>
-//               <TouchableOpacity onPress={() => {
-//                 setEditingId(item.id);
-//                 setNewTitle(item.title);
-//                 setNewArtist(item.artist);
-                
-//               }}>
-//                 <Ionicons name="create-outline" size={20} color="#ffb400" />
-//               </TouchableOpacity>
-//               <TouchableOpacity onPress={() => handleDeleteSong(item.id)} style={{ marginLeft: 10 }}>
-//                 <Ionicons name="trash-outline" size={20} color="#dc6353" />
-//               </TouchableOpacity>
-//             </View>
-            
-//           </View>
-          
-//         )}
-//       />     
-//       {editingId && (
-//         <TouchableOpacity style={styles.button} onPress={() => handleEditSong(editingId)}>
-//           <Text style={styles.buttonText}>Save Edit</Text>
-//         </TouchableOpacity>
-//       )}
+//
 //         <TouchableOpacity onPress={() => setActiveTab('Update')} style={styles.tab}>
 //           <Text style={styles.tabText}>Update</Text>
 //         </TouchableOpacity>
@@ -346,5 +359,149 @@ const styles = StyleSheet.create({
 //   },
 //   content: {
 //     flex: 1,
+//   },
+// });
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import { View, Text, TouchableOpacity, StyleSheet,FlatList } from 'react-native';
+// import AddSongForm from '../../components/AddSongForm';
+// import UserManagement from '../../screens/UserManagement';
+// import { Ionicons } from '@expo/vector-icons';
+// import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+// import { db } from '../../configs/firebaseConfig';
+// // import { Ionicons } from '@expo/vector-icons';
+// import { signOut } from "firebase/auth";
+// import { auth } from "../../configs/firebaseConfig";
+// import { useNavigation } from "@react-navigation/native";
+// const AdminDashboard = () => {
+//   const [selectedTab, setSelectedTab] = useState('songs');
+//   const [songs, setSongs] = useState([]);
+//   // const [users, setUsers] = useState([]);
+//   const [newTitle, setNewTitle] = useState('');
+//   const [newArtist, setNewArtist] = useState('');
+//   const [newGener, setNewGener] = useState('');
+//   const [editingId, setEditingId] = useState(null);
+//   const ADMIN_EMAIL = "trancongminh260602@gmail.com";
+//     // Fetch data
+//   const fetchData = async () => {
+//     const songSnapshot = await getDocs(collection(db, 'songs'));
+//     const userSnapshot = await getDocs(collection(db, 'users'));
+
+//     setSongs(songSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+//     setUsers(userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+//   };
+
+//   useEffect(() => {
+//     fetchData();
+//   }, []);
+//     // Edit song
+  
+//   const handleEditSong = async (id) => {
+//     const songRef = doc(db, 'songs', id );
+//     await updateDoc(songRef,
+//     {
+//       title: newTitle,
+//       artist: newArtist,
+//       gener: newGener,
+//     });
+//     setEditingId(null);
+//     setNewTitle('');
+//     setNewArtist('');
+//     setNewGener('');
+//     fetchData();
+//   };
+  
+
+// //   // Delete song
+//   const handleDeleteSong = async (id) => {
+//     Alert.alert("Confirm", "Delete this song?", [
+//       { text: "Cancel" },
+//       { text: "Delete", onPress: async () => {
+//         await deleteDoc(doc(db, 'songs', id));
+//         fetchData();
+//       }}
+//     ]);
+//   };
+
+//   // Delete user
+//   // const handleDeleteUser = async (id) => {
+//   //   Alert.alert("Confirm", "Delete this user?", [
+//   //     { text: "Cancel" },
+//   //     { text: "Delete", onPress: async () => {
+//   //       await deleteDoc(doc(db, 'users', id));
+//   //       fetchData();
+//   //     }}
+//   //   ]);
+//   // };
+//   const navigation = useNavigation();
+// const handleLogout = async () => {
+//     try {
+//       await signOut(auth);
+//       navigation.replace("Login"); 
+      
+//     } catch (error) {
+//       Alert.alert("Error", error.message);
+//     }
+//   };
+//   return (
+//     <View style={styles.container}>
+//       {/* Menu */}
+//       <View style={styles.menu}>
+//         <TouchableOpacity
+//           style={styles.menuItem}
+//           onPress={() => setSelectedTab('songs')}
+//         >
+//           <Ionicons name="musical-notes" size={20} color="#fff" />
+//           <Text style={styles.menuText}>Songs</Text>
+//         </TouchableOpacity>
+
+//         <TouchableOpacity
+//           style={styles.menuItem}
+//           onPress={() => setSelectedTab('users')}
+//         >
+//           <Ionicons name="people" size={20} color="#fff" />
+//           <Text style={styles.menuText}>Users</Text>
+//         </TouchableOpacity>
+//       </View>
+
+//       {/* Content */}
+//       <View style={styles.content}>
+//         {selectedTab === 'songs' && <AddSongForm />}
+      
+     
+//         {selectedTab === 'users' && <UserManagement />}
+//       </View>
+//     </View>
+//   );
+// };
+
+// export default AdminDashboard;
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#242424',
+//     paddingTop: 40,
+//   },
+//   menu: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-around',
+//     paddingVertical: 10,
+//     backgroundColor: '#333',
+//   },
+//   menuItem: {
+//     alignItems: 'center',
+//   },
+//   menuText: {
+//     color: '#fff',
+//     marginTop: 4,
+//     fontSize: 14,
+//   },
+//   content: {
+//     flex: 1,
+//     padding: 10,
 //   },
 // });

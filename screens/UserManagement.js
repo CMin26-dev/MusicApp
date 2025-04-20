@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 const UserManagement = () => {
   const navigation = useNavigation();
   const [users, setUsers] = useState([]);
+  const [selectedTab, setSelectedTab] = useState('users');
 
 const fetchData = async () => {
    
@@ -31,11 +32,30 @@ const fetchData = async () => {
   return (
     <View style={styles.container}>
       <View style={styles.topbar}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      {/* <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="#fff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+     
      <Text style={styles.title}>SOUNDIFY</Text>
      </View>
+     <View style={styles.menu}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="musical-notes" size={20}  
+          style={selectedTab === 'songs' ? styles.activeIcon : styles.menuText} />
+          <Text style={styles.menuText}>Songs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('UserManagement')}
+        >
+          <Ionicons name="people" size={20} style={selectedTab === 'users' ? styles.activeIcon : styles.menuText}  />
+          <Text style={styles.menuText}>Users</Text>
+        </TouchableOpacity>
+      </View>
      <Text style={styles.titleuser}>Users</Text>
       <FlatList
         data={users}
@@ -75,6 +95,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 20,
     marginBottom: 20,
+    marginLeft: 165,
     fontWeight: "bold",
     
   },
@@ -98,5 +119,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
+  },
+  menu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 4,
+    backgroundColor: '#333',
+  },
+  menuItem: {
+    alignItems: 'center',
+
+  },
+  menuText: {
+    color: '#fff',
+    marginTop: 2,
+    fontSize: 14,
+  },
+  activeMenuText: {
+    color: '#dc6353',
+    fontWeight: 'bold',
+  },
+  activeIcon: {
+    color: '#dc6353',
   },
 });
