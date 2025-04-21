@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
   const [newGener, setNewGener] = useState('');
+  const [newUrl, setNewUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
   const ADMIN_EMAIL = "trancongminh260602@gmail.com";
   const [selectedTab, setSelectedTab] = useState('songs');
@@ -60,11 +61,13 @@ export default function AdminDashboard() {
       title: newTitle,
       artist: newArtist,
       gener: newGener,
+      url: newUrl,
     });
     setEditingId(null);
     setNewTitle('');
     setNewArtist('');
     setNewGener('');
+    setNewUrl('');
     fetchData();
   };
   
@@ -138,6 +141,10 @@ const handleLogout = async () => {
   setNewTitle={setNewTitle}
   newArtist={newArtist}
   setNewArtist={setNewArtist}
+  newGener={newGener}
+  setNewGener={setNewGener}
+  newUrl={newUrl}
+  setNewUrl={setNewUrl}
   onEditDone={() => {
     setEditingId(null);
     setNewTitle('');
@@ -159,6 +166,8 @@ const handleLogout = async () => {
                 setEditingId(item.id);
                 setNewTitle(item.title);
                 setNewArtist(item.artist);
+                setNewGener(item.gener);
+                setNewUrl(item.url);
                 
               }}>
                 <Ionicons name="create-outline" size={20} color="#ffb400" />

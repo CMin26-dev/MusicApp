@@ -11,10 +11,12 @@ const AddSongForm = ({
   setNewArtist,
   newGener,
   setNewGener,
+  newUrl,
+  setNewUrl,
   onEditDone
 }) => {
   const handleSave = async () => {
-    if (!newTitle || !newArtist || !newGener ) return;
+    if (!newTitle || !newArtist || !newGener || !newUrl) return;
 
     if (editingId) {
       // 👉 Nếu có ID => đang chỉnh sửa
@@ -22,7 +24,9 @@ const AddSongForm = ({
       await updateDoc(songRef, {
         title: newTitle,
         artist: newArtist,
-        gener: newGener
+        gener: newGener,
+        url: newUrl,
+
       });
     } else {
       // 👉 Nếu không có ID => thêm mới
@@ -30,6 +34,7 @@ const AddSongForm = ({
         title: newTitle,
         artist: newArtist,
         gener: newGener,
+        url: newUrl,
       });
     }
 
@@ -58,6 +63,13 @@ const AddSongForm = ({
   placeholder="Thể Loại"
   value={newGener}
   onChangeText={setNewGener}
+  placeholderTextColor="#aaa"
+/>
+<TextInput
+  style={styles.input}
+  placeholder="Thể Loại"
+  value={newUrl}
+  onChangeText={setNewUrl}
   placeholderTextColor="#aaa"
 />
 

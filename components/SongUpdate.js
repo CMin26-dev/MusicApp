@@ -1,4 +1,4 @@
-// screens/SongUpdateScreen.js
+
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
