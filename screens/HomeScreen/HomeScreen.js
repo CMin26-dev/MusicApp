@@ -11,10 +11,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CustomBottomNavigationBar from "../../components/CustomBottomNavigationBar";
 import { TextInput, FlatList } from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 import { db } from "../../configs/firebaseConfig";
 import { Audio } from "expo-av";
 import PlaylistScreen from "./PlaylistScreen";
+import { getAuth } from "firebase/auth";
 
 const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState("Song");
@@ -22,7 +23,7 @@ const HomeScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [songs, setSongs] = useState([]);
-
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -65,9 +66,30 @@ const HomeScreen = () => {
   };
   
 
-  const handleAddToPlaylist = (song) => {
-    alert(`Đã thêm "${song.title}" vào playlist!`);
-    navigation.navigate('PlaylistScreen');
+  const handleAddToPlaylist = async (song) => {
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        alert("Please login to add songs to your playlist");
+        return;
+      }
+
+      // Add the song to the user's playlist in Firebase
+      await addDoc(collection(db, "playlists"), {
+        userId: userId,
+        title: song.title,
+        artist: song.artist,
+        url: song.url,
+        image: song.image,
+        gener: song.gener,
+        addedAt: new Date().toISOString(),
+      });
+
+      alert(`Đã thêm "${song.title}" vào playlist!`);
+    } catch (error) {
+      console.error("Error adding song to playlist:", error);
+      alert("Không thể thêm bài hát vào playlist. Vui lòng thử lại sau.");
+    }
   };
 
   const renderSongItem = ({ item }) => (
