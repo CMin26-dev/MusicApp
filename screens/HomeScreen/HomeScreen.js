@@ -6,22 +6,83 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CustomBottomNavigationBar from "../../components/CustomBottomNavigationBar";
-import { TextInput, FlatList } from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { TextInput, FlatList, } from "react-native";
+import { collection, getDoc, doc,getDocs } from "firebase/firestore";
 import { db } from "../../configs/firebaseConfig";
 import { Audio } from "expo-av";
 import PlaylistScreen from "./PlaylistScreen";
-
+import { auth } from "../../configs/firebaseConfig";
 const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState("Song");
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [songs, setSongs] = useState([]);
+
+
+//check user
+useEffect(() => {
+  const checkIfUserIsBanned = async () => {
+    const user = auth.currentUser;
+
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().banned === true) {
+          showBannedAlert(); // Tách alert thành hàm riêng
+        }
+      } catch (error) {
+        console.error("Lỗi khi kiểm tra trạng thái bị cấm:", error);
+      }
+    }
+  };
+
+  checkIfUserIsBanned();
+
+  const showBannedAlert = () => {
+    Alert.alert(
+      "Tài khoản bị cấm",
+      "Bạn đã bị cấm do vi phạm nguyên tắc của chúng tôi.",
+      [
+        {
+          text: "Help",
+          onPress: () => {
+            Alert.alert(
+              "Thông báo",
+              "Bạn đã bị khóa tài khoản 5 ngày vì vi phạm chính sách bình luận của chúng tôi.",
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    // Sau khi đóng Alert phụ, mở lại alert chính
+                    setTimeout(() => {
+                      showBannedAlert();
+                    }, 300); 
+                  }
+                }
+              ]
+            );
+          },
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          onPress: () => navigation.navigate("LogoutConfirm"),
+        },
+      ]
+    );
+  };
+  
+},
+ []);
+
 
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet,TouchableOpacity,Alert} from 'react-native';
-import { collection, getDocs, doc } from 'firebase/firestore';
+import { collection, getDocs, doc,updateDoc } from 'firebase/firestore';
 import { db } from '../configs/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
@@ -11,9 +11,13 @@ const UserManagement = () => {
 
 const fetchData = async () => {
    
-    const userSnapshot = await getDocs(collection(db, 'users'));
-    setUsers(userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
+  const querySnapshot = await getDocs(collection(db, 'users'));
+  const usersData = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  setUsers(usersData);
+};
   useEffect(() => {
     fetchData();
   }, []);
@@ -28,6 +32,28 @@ const fetchData = async () => {
         }}
       ]);
     };
+     //  Cấm người dùng
+  const handleBanUser = async (UserId) => {
+    try{
+    const userRef = doc(db, "users", UserId);
+    await updateDoc(userRef, { banned: true });
+    await fetchData();
+  }catch (error) {
+    console.log("Lỗi khi cấm user:", error);
+  }
+
+  };
+  // Mở cấm người dùng
+  const handleUnbanUser = async (UerId) => {
+    try{
+    const userRef = doc(db, "users", UerId);
+    await updateDoc(userRef, { banned: false });
+    await fetchData();
+  }catch (error) {
+    console.log("Lỗi khi mở khóa user:", error);
+  }
+
+  };
 
   return (
     <View style={styles.container}>
@@ -62,10 +88,26 @@ const fetchData = async () => {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.itemBox}>
-            <Text style={styles.itemText}>{item.fullName} - {item.email}</Text>
-            <TouchableOpacity onPress={() => handleDeleteUser(item.id)}>
-              <Ionicons name="trash-outline" size={20} color="#dc6353" />
+            <Text style={styles.itemText}>{item.fullName}-{item.email}</Text>
+             <View style={styles.row}>
+           
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() =>
+                item.banned
+                  ? handleUnbanUser(item.id)
+                  : handleBanUser(item.id)
+              }
+            >
+              <Text style={{ color: "#ff5c5c"
+               }}>
+                {item.banned ? "🚫" : "⭕"}
+              </Text>
             </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleDeleteUser(item.id)}>
+              <Ionicons name="trash-outline" size={18} color="#dc6353" />
+            </TouchableOpacity>
+            </View>
           </View>
         )}
       />
@@ -103,7 +145,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#333",
-    padding: 10,
+    padding: 16,
     borderRadius: 10,
     marginBottom: 10,
 

@@ -50,6 +50,7 @@ export default function Index() {
       <Stack.Screen name="SongScreen" component={SongScreen} />
       <Stack.Screen name="PlaylistScreen" component={PlaylistScreen} />
       <Stack.Screen name="UserManagement" component ={UserManagement}/>
+      <Stack.Screen name="LoginScreen" component ={LoginScreen}/>
     </Stack.Navigator>
 
       );
