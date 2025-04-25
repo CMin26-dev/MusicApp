@@ -74,7 +74,7 @@ useEffect(() => {
         },
         {
           text: "Logout",
-          onPress: () => navigation.navigate("LogoutConfirm"),
+          onPress: () => navigation.navigate("LoginScreen"),
         },
       ]
     );
