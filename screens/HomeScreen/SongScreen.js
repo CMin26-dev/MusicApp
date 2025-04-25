@@ -6,10 +6,14 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  Animated,
+  Easing,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
+import { getFirestore, doc, updateDoc, increment } from 'firebase/firestore';
+import { getApp } from 'firebase/app';
 
 const { width } = Dimensions.get('window');
 
@@ -20,17 +24,43 @@ const SongScreen = ({ route }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState(null);
 
+  const [selectedRating, setSelectedRating] = useState(0);
+
   const soundRef = useRef(null);
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const db = getFirestore(getApp());
 
   useEffect(() => {
     loadSound();
-
     return () => {
       if (soundRef.current) {
         soundRef.current.unloadAsync();
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (isPlaying) {
+      startRotation();
+    } else {
+      stopRotation();
+    }
+  }, [isPlaying]);
+
+  const startRotation = () => {
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 8000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  };
+
+  const stopRotation = () => {
+    rotateAnim.stopAnimation();
+  };
 
   const loadSound = async () => {
     const { sound } = await Audio.Sound.createAsync({ uri: song.url }, {}, onPlaybackStatusUpdate);
@@ -58,26 +88,58 @@ const SongScreen = ({ route }) => {
     navigation.goBack();
   };
 
+  const handleRating = async (rating) => {
+    const songRef = doc(db, 'songs', song.id);
+    const oldField = selectedRating ? `r${selectedRating}` : null;
+    const newField = `r${rating}`;
+
+    const updates = {};
+    if (oldField && oldField !== newField) {
+      updates[oldField] = increment(-1);
+    }
+    updates[newField] = increment(1);
+
+    try {
+      await updateDoc(songRef, updates);
+      setSelectedRating(rating);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật đánh giá:', error);
+    }
+  };
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack}>
+        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Ionicons name="chevron-down" size={28} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.nowPlayingText}>ĐANG PHÁT TỪ NGHỆ SĨ</Text>
-        <Text style={styles.artistName}>{song.artist}</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.nowPlayingText}>ĐANG PHÁT TỪ NGHỆ SĨ</Text>
+          <Text style={styles.artistName}>{song.artist}</Text>
+        </View>
       </View>
 
-      {/* Song Image */}
-      <Image source={{ uri: song.image }} style={styles.image} />
+      {/* Rotating Song Image */}
+      <Animated.Image
+        source={{ uri: song.image }}
+        style={[
+          styles.image,
+          {
+            transform: [{ rotate: spin }],
+          },
+        ]}
+      />
 
       {/* Song Info */}
-      <View style={styles.songDetails}>
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.songTitle}>{song.title}</Text>
-          <Text style={styles.songArtist}>{song.artist}</Text>
-        </View>
+      <View style={styles.songInfoContainer}>
+        <Text style={styles.songTitle}>{song.title}</Text>
+        <Text style={styles.songArtist}>{song.artist}</Text>
       </View>
 
       {/* Progress */}
@@ -114,6 +176,26 @@ const SongScreen = ({ route }) => {
           <Ionicons name={isPlaying ? 'pause' : 'play'} size={36} color="#000" />
         </TouchableOpacity>
       </View>
+
+      {/* Rating Hearts */}
+      <View style={styles.ratingContainer}>
+        <Text style={styles.ratingLabel}>Bạn yêu thích bài hát này thế nào?</Text>
+        <View style={styles.heartsRow}>
+          {[1, 2, 3, 4, 5].map((rating) => (
+            <TouchableOpacity
+              key={rating}
+              onPress={() => handleRating(rating)}
+            >
+              <Ionicons
+                name={selectedRating >= rating ? 'heart' : 'heart-outline'}
+                size={32}
+                color={selectedRating >= rating ? '#e74c3c' : '#aaa'}
+                style={styles.heartIcon}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     </View>
   );
 };
@@ -131,8 +213,18 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   header: {
+    position: 'relative',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 0,
+    zIndex: 1,
+  },
+  headerTextContainer: {
+    alignItems: 'center',
   },
   nowPlayingText: {
     color: '#ccc',
@@ -146,26 +238,27 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   image: {
-    width: width - 40,
-    height: width - 40,
-    borderRadius: 10,
+    width: width - 100,
+    height: width - 100,
+    borderRadius: (width - 100) / 2,
     alignSelf: 'center',
     marginBottom: 20,
+    borderWidth: 4,
+    borderColor: '#333',
   },
-  songDetails: {
-    justifyContent: 'center',
+  songInfoContainer: {
     alignItems: 'center',
     marginBottom: 20,
   },
   songTitle: {
     color: '#fff',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
   },
   songArtist: {
-    color: '#ccc',
-    fontSize: 16,
-    marginTop: 5,
+    color: '#aaa',
+    fontSize: 14,
+    marginTop: 4,
   },
   progressContainer: {
     paddingHorizontal: 20,
@@ -179,7 +272,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: 4,
-    backgroundColor: '#1DB954',
+    backgroundColor: '#dc6353',
   },
   progressTimes: {
     flexDirection: 'row',
@@ -202,6 +295,21 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  ratingContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  ratingLabel: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  heartsRow: {
+    flexDirection: 'row',
+  },
+  heartIcon: {
+    marginHorizontal: 5,
   },
 });
 
