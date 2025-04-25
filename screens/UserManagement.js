@@ -34,24 +34,57 @@ const fetchData = async () => {
     };
      //  Cấm người dùng
   const handleBanUser = async (UserId) => {
-    try{
-    const userRef = doc(db, "users", UserId);
-    await updateDoc(userRef, { banned: true });
-    await fetchData();
-  }catch (error) {
-    console.log("Lỗi khi cấm user:", error);
-  }
-
+  Alert.alert(
+    "Xác nhận",
+    "Bạn có chắc cấm người dùng này?",
+    [
+      {
+        text: "Hủy",
+        style: "cancel",
+      },
+      {
+        text: "Cấm",
+        onPress: async () => {
+          const userRef = doc(db, "users", UserId);
+          try {
+            await updateDoc(userRef, { banned: true });
+            await fetchData();
+            alert("Đã cấm người dùng.");
+          } catch (error) {
+            console.error("Lỗi khi cấm người dùng:", error);
+          }
+        },
+        style: "destructive"
+      }
+    ]
+  );
   };
   // Mở cấm người dùng
-  const handleUnbanUser = async (UerId) => {
-    try{
-    const userRef = doc(db, "users", UerId);
-    await updateDoc(userRef, { banned: false });
-    await fetchData();
-  }catch (error) {
-    console.log("Lỗi khi mở khóa user:", error);
-  }
+  const handleUnbanUser = async (UserId) => {
+  Alert.alert(
+    "Xác nhận",
+    "Bạn có chắc muốn mở khóa người dùng này?",
+    [
+      {
+        text: "Hủy",
+        style: "cancel",
+      },
+      {
+        text: "Mở khóa",
+        onPress: async () => {
+          const userRef = doc(db, "users", UserId);
+          try {
+            await updateDoc(userRef, { banned: false });
+            await fetchData();
+            alert("Đã mở khóa người dùng.");
+          } catch (error) {
+            console.error("Lỗi khi mở khóa người dùng:", error);
+          }
+        },
+        style: "default"
+      }
+    ]
+  );
 
   };
 
