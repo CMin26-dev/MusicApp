@@ -23,7 +23,7 @@ const HomeScreen = () => {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [songs, setSongs] = useState([]);
-
+  const [showDropdown, setShowDropdown] = useState(false);
 
 //check user
 useEffect(() => {
@@ -206,9 +206,32 @@ useEffect(() => {
       <View style={styles.header}>
         <View style={styles.topBar}>
           <Text style={styles.title}>SOUNDIFY</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("LogoutConfirm")}>
+          <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)}>
             <Ionicons name="person-circle-outline" size={28} color="#fff" />
           </TouchableOpacity>
+          {showDropdown && (
+  <View style={styles.dropdownMenu}>
+    <TouchableOpacity onPress={() => navigation.navigate("LogoutConfirm")}
+      style={{ 
+        flexDirection:'row',
+        justifyContent:'flex-end',
+        padding: 6 }}
+      >
+      <Text style={styles.dropdownItem}>Logout</Text>
+      <Ionicons name="log-out-outline" size={24} color="#fff" />
+
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate("Edit")} 
+    style={{ 
+      flexDirection:'row',
+      justifyContent:'flex-end',
+      padding:6 }}>
+      <Text style={styles.dropdownItem}>Edit</Text>
+      <Ionicons name="settings-outline" size={24} color="#fff" />
+    </TouchableOpacity>
+    
+  </View>
+)}
         </View>
         <Text style={styles.pageTitle}>
           {activeTab === "Song"
@@ -331,6 +354,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
   },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 50,
+    right: 10,
+    backgroundColor: '#333',
+    borderRadius: 8,
+    padding: 16,
+    zIndex: 100,
+  },
+  dropdownItem: {
+    color: '#fff',
+    fontSize:20,
+    fontFamily: "Poppins, sans-serif",
+    paddingHorizontal: 20,}
 });
 
 export default HomeScreen;

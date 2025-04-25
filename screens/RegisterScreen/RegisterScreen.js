@@ -27,7 +27,7 @@ const RegisterScreen = ({ navigation }) => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
   
-      // 🔥 Write user data to Firestore
+      //  Write user data to Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName: fullName,
         email: email,
@@ -80,7 +80,7 @@ const RegisterScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+      <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
         <Text style={styles.linkText}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>

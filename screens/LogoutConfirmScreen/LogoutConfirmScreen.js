@@ -7,7 +7,7 @@ const LogoutConfirmScreen = ({ navigation }) => {
   const handleConfirmLogout = async () => {
     try {
       await signOut(auth);
-      navigation.replace("Login");
+      navigation.replace("LoginScreen");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -15,7 +15,7 @@ const LogoutConfirmScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Are you sure you want to logout?</Text>
+      <Text style={styles.title}>Are you sure you want to Logout?</Text>
 
       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmLogout}>
         <Text style={styles.buttonText}>Confirm Logout</Text>
