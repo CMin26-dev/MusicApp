@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CustomBottomNavigationBar from "../../components/CustomBottomNavigationBar";
 import { TextInput, FlatList, } from "react-native";
-import { collection, getDoc, doc,getDocs } from "firebase/firestore";
+import { collection, getDoc, doc, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../configs/firebaseConfig";
 import { Audio } from "expo-av";
 import PlaylistScreen from "./PlaylistScreen";
@@ -88,17 +88,30 @@ useEffect(() => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const snapshot = await getDocs(collection(db, "songs"));
-        const songList = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          title: doc.data().title,
-          artist: doc.data().artist,
-          url: doc.data().url,
-          image: doc.data().image ,
-          gener: doc.data().gener,
-    
-        }));
-        setSongs(songList);
+        // Sử dụng onSnapshot để lắng nghe thay đổi
+        const unsubscribe = onSnapshot(collection(db, "songs"), (snapshot) => {
+          const songList = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              title: data.title,
+              artist: data.artist,
+              url: data.url,
+              image: data.image,
+              gener: data.gener,
+              r1: data.r1 || 0,
+              r2: data.r2 || 0,
+              r3: data.r3 || 0,
+              r4: data.r4 || 0,
+              r5: data.r5 || 0,
+            };
+          });
+          console.log("Songs data updated:", songList); // Debug log
+          setSongs(songList);
+        });
+
+        // Cleanup listener khi component unmount
+        return () => unsubscribe();
       } catch (error) {
         console.error("Lỗi khi tải bài hát từ Firebase:", error);
       }
@@ -153,6 +166,61 @@ useEffect(() => {
     </TouchableOpacity>
   );
 
+  // Hàm tính rating trung bình
+  const calculateAverageRating = (song) => {
+    const r1 = song.r1 || 0;
+    const r2 = song.r2 || 0;
+    const r3 = song.r3 || 0;
+    const r4 = song.r4 || 0;
+    const r5 = song.r5 || 0;
+    const totalRatings = 15;
+    
+    const weightedSum = (r1 * 1) + (r2 * 2) + (r3 * 3) + (r4 * 4) + (r5 * 5);
+    return weightedSum / totalRatings;
+  };
+
+  const renderRankingItem = ({ item, index }) => {
+    const rating = calculateAverageRating(item);
+    const getRankColor = (index) => {
+      switch(index) {
+        case 0: return '#FFD700'; // Gold
+        case 1: return '#C0C0C0'; // Silver
+        case 2: return '#CD7F32'; // Bronze
+        default: return '#dc6353';
+      }
+    };
+
+    return (
+      <TouchableOpacity 
+        style={styles.rankingItem}
+        onPress={() => navigation.navigate('SongScreen', { song: item })}
+      >
+        <View style={[styles.rankContainer, { backgroundColor: getRankColor(index) }]}>
+          <Text style={styles.rankText}>#{index + 1}</Text>
+        </View>
+        <Image source={{ uri: item.image }} style={styles.rankingImage} />
+        <View style={styles.rankingInfo}>
+          <Text style={styles.rankingTitle}>{item.title}</Text>
+          <Text style={styles.rankingArtist}>{item.artist}</Text>
+          <View style={styles.ratingContainer}>
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Ionicons
+                  key={star}
+                  name={star <= Math.round(rating) ? 'star' : 'star-outline'}
+                  size={16}
+                  color="#FFD700"
+                  style={styles.starIcon}
+                />
+              ))}
+            </View>
+            <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case "Song":
@@ -194,6 +262,27 @@ useEffect(() => {
             />
           </View>
         );
+      case "Ranking":
+        const sortedSongs = [...songs].sort((a, b) => {
+          const ratingA = calculateAverageRating(a);
+          const ratingB = calculateAverageRating(b);
+          return ratingB - ratingA;
+        });
+        return (
+          <View style={styles.rankingContainer}>
+            <View style={styles.rankingHeader}>
+              <Ionicons name="trophy" size={24} color="#FFD700" />
+              <Text style={styles.rankingHeaderText}>Bảng xếp hạng</Text>
+            </View>
+            <FlatList
+              data={sortedSongs}
+              renderItem={renderRankingItem}
+              keyExtractor={(item) => item.id}
+              style={styles.rankingList}
+              contentContainerStyle={styles.rankingListContent}
+            />
+          </View>
+        );
       case "Playlist":
         return <PlaylistScreen />;
       default:
@@ -210,34 +299,34 @@ useEffect(() => {
             <Ionicons name="person-circle-outline" size={28} color="#fff" />
           </TouchableOpacity>
           {showDropdown && (
-  <View style={styles.dropdownMenu}>
-    <TouchableOpacity onPress={() => navigation.navigate("LogoutConfirm")}
-      style={{ 
-        flexDirection:'row',
-        justifyContent:'flex-end',
-        padding: 6 }}
-      >
-      <Text style={styles.dropdownItem}>Logout</Text>
-      <Ionicons name="log-out-outline" size={24} color="#fff" />
-
-    </TouchableOpacity>
-    <TouchableOpacity onPress={() => navigation.navigate("Edit")} 
-    style={{ 
-      flexDirection:'row',
-      justifyContent:'flex-end',
-      padding:6 }}>
-      <Text style={styles.dropdownItem}>Edit</Text>
-      <Ionicons name="settings-outline" size={24} color="#fff" />
-    </TouchableOpacity>
-    
-  </View>
-)}
+            <View style={styles.dropdownMenu}>
+              <TouchableOpacity onPress={() => navigation.navigate("LogoutConfirm")}
+                style={{ 
+                  flexDirection:'row',
+                  justifyContent:'flex-end',
+                  padding: 6 }}
+              >
+                <Text style={styles.dropdownItem}>Logout</Text>
+                <Ionicons name="log-out-outline" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.navigate("Edit")} 
+                style={{ 
+                  flexDirection:'row',
+                  justifyContent:'flex-end',
+                  padding:6 }}>
+                <Text style={styles.dropdownItem}>Edit</Text>
+                <Ionicons name="settings-outline" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
         <Text style={styles.pageTitle}>
           {activeTab === "Song"
             ? "All Songs"
             : activeTab === "Search"
             ? "Search"
+            : activeTab === "Ranking"
+            ? "Bảng xếp hạng"
             : "Playlist"}
         </Text>
       </View>
@@ -367,7 +456,94 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize:20,
     fontFamily: "Poppins, sans-serif",
-    paddingHorizontal: 20,}
+    paddingHorizontal: 20,},
+  rankingContainer: {
+    flex: 1,
+    backgroundColor: '#242424',
+  },
+  rankingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 15,
+    backgroundColor: '#1a1a1a',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  rankingHeaderText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  rankingList: {
+    flex: 1,
+  },
+  rankingListContent: {
+    padding: 10,
+  },
+  rankingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#333',
+    borderRadius: 12,
+    marginBottom: 10,
+    padding: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  rankContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  rankText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rankingImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  rankingInfo: {
+    flex: 1,
+  },
+  rankingTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  rankingArtist: {
+    color: '#aaa',
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  starIcon: {
+    marginRight: 2,
+  },
+  ratingText: {
+    color: '#FFD700',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });
 
 export default HomeScreen;

@@ -7,6 +7,7 @@ const CustomBottomNavigationBar = ({ onTabChange, activeTab }) => {
   const tabs = [
     { name: 'Song', icon: 'musical-note-outline', activeIcon: 'musical-note', route: 'Song' },
     { name: 'Search', icon: 'search-outline', activeIcon: 'search', route: 'Search' },
+    { name: 'Ranking', icon: 'trophy-outline', activeIcon: 'trophy', route: 'Ranking' },
     { name: 'Playlist', icon: 'list-outline', activeIcon: 'list', route: 'Playlist' },
   ];
 
