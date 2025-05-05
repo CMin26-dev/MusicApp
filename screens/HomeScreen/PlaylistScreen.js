@@ -5,11 +5,10 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
   Alert
 } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
-import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../../configs/firebaseConfig';
 import { useNavigation } from "@react-navigation/native";
 
@@ -24,39 +23,13 @@ const PlaylistScreen = () => {
       const unsubscribe = onSnapshot(playlistsRef, (snapshot) => {
         const playlistData = snapshot.docs.map(doc => ({
           id: doc.id,
-          ...doc.data(),
+          ...doc.data()
         }));
         setPlaylists(playlistData);
       });
-
       return () => unsubscribe();
     }
   }, []);
-
-  const handleDeletePlaylist = (playlistId, playlistName) => {
-    Alert.alert(
-      "Xóa Playlist",
-      `Bạn có chắc muốn xóa playlist "${playlistName}"?`,
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Xóa",
-          style: "destructive",
-          onPress: async () => {
-            const user = auth.currentUser;
-            if (user) {
-              try {
-                await deleteDoc(doc(db, `users/${user.uid}/playlists/${playlistId}`));
-              } catch (error) {
-                console.error("Error deleting playlist:", error);
-                Alert.alert("Lỗi", "Không thể xóa playlist. Vui lòng thử lại!");
-              }
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const renderPlaylistItem = ({ item }) => (
     <TouchableOpacity 
@@ -73,12 +46,6 @@ const PlaylistScreen = () => {
             {item.songs?.length || 0} bài hát
           </Text>
         </View>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeletePlaylist(item.id, item.name)}
-        >
-          <Ionicons name="trash-outline" size={24} color="#dc6353" />
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -146,9 +113,6 @@ const styles = StyleSheet.create({
   songCount: {
     color: '#888',
     fontSize: 14,
-  },
-  deleteButton: {
-    padding: 8,
   },
   emptyContainer: {
     flex: 1,
