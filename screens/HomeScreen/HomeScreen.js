@@ -139,9 +139,44 @@ useEffect(() => {
   };
   
 
-  const handleAddToPlaylist = (song) => {
-    alert(`Đã thêm "${song.title}" vào playlist!`);
-    navigation.navigate('PlaylistScreen');
+  const handleAddToPlaylist = async (song) => {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("Bạn cần đăng nhập để sử dụng chức năng này!");
+        return;
+      }
+
+      const playlistRef = doc(db, "playlists", user.uid);
+      const playlistSnap = await getDoc(playlistRef);
+
+      if (playlistSnap.exists()) {
+        const existingPlaylist = playlistSnap.data().songs || [];
+        const isSongAlreadyInPlaylist = existingPlaylist.some(
+          (existingSong) => existingSong.id === song.id
+        );
+
+        if (isSongAlreadyInPlaylist) {
+          alert(`"${song.title}" đã có trong playlist của bạn!`);
+        } else {
+          await setDoc(
+            playlistRef,
+            { songs: [...existingPlaylist, song] },
+            { merge: true }
+          );
+          alert(`Đã thêm "${song.title}" vào playlist của bạn!`);
+        }
+      } else {
+        await setDoc(playlistRef, { songs: [song] });
+        alert(`Đã tạo playlist và thêm "${song.title}" vào!`);
+      }
+
+      navigation.navigate("PlaylistScreen");
+    } catch (error) {
+      console.error("Lỗi khi thêm bài hát vào playlist:", error);
+      alert("Đã xảy ra lỗi khi thêm bài hát vào playlist.");
+    }
   };
 
   const renderSongItem = ({ item }) => (
