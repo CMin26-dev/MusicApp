@@ -12,11 +12,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import CustomBottomNavigationBar from "../../components/CustomBottomNavigationBar";
 import { TextInput, FlatList, } from "react-native";
-import { collection, getDoc, doc, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, getDoc, doc, getDocs, onSnapshot, addDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../configs/firebaseConfig";
 import { Audio } from "expo-av";
 import PlaylistScreen from "./PlaylistScreen";
 import { auth } from "../../configs/firebaseConfig";
+import AddToPlaylistModal from '../../components/AddToPlaylistModal';
+
 const HomeScreen = () => {
   const [activeTab, setActiveTab] = useState("Song");
   const navigation = useNavigation();
@@ -24,6 +26,9 @@ const HomeScreen = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [songs, setSongs] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedSong, setSelectedSong] = useState(null);
+  const [userPlaylists, setUserPlaylists] = useState([]);
 
 //check user
 useEffect(() => {
@@ -83,7 +88,20 @@ useEffect(() => {
 },
  []);
 
-
+useEffect(() => {
+  const user = auth.currentUser;
+  if (user) {
+    const playlistsRef = collection(db, `users/${user.uid}/playlists`);
+    const unsubscribe = onSnapshot(playlistsRef, (snapshot) => {
+      const playlists = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setUserPlaylists(playlists);
+    });
+    return () => unsubscribe();
+  }
+}, []);
 
   useEffect(() => {
     const fetchSongs = async () => {
@@ -140,8 +158,54 @@ useEffect(() => {
   
 
   const handleAddToPlaylist = (song) => {
-    alert(`Đã thêm "${song.title}" vào playlist!`);
-    navigation.navigate('PlaylistScreen');
+    setSelectedSong(song);
+    setModalVisible(true);
+  };
+
+  const handleCreateNewPlaylist = async (playlistName) => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const playlistsRef = collection(db, `users/${user.uid}/playlists`);
+        await addDoc(playlistsRef, {
+          name: playlistName,
+          songs: [],
+          createdAt: new Date(),
+        });
+      } catch (error) {
+        console.error("Error creating playlist:", error);
+        alert("Không thể tạo playlist. Vui lòng thử lại!");
+      }
+    }
+  };
+
+  const handleAddSongToPlaylist = async (playlistId) => {
+    if (!selectedSong) return;
+
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const playlistRef = doc(db, `users/${user.uid}/playlists/${playlistId}`);
+        const playlistDoc = await getDoc(playlistRef);
+        
+        if (playlistDoc.exists()) {
+          const currentSongs = playlistDoc.data().songs || [];
+          if (!currentSongs.find(s => s.id === selectedSong.id)) {
+            await updateDoc(playlistRef, {
+              songs: [...currentSongs, selectedSong]
+            });
+            alert(`Đã thêm "${selectedSong.title}" vào playlist!`);
+          } else {
+            alert("Bài hát đã có trong playlist!");
+          }
+        }
+      } catch (error) {
+        console.error("Error adding song to playlist:", error);
+        alert("Không thể thêm bài hát. Vui lòng thử lại!");
+      }
+    }
+    setModalVisible(false);
+    setSelectedSong(null);
   };
 
   const renderSongItem = ({ item }) => (
@@ -334,6 +398,13 @@ useEffect(() => {
       <CustomBottomNavigationBar
         onTabChange={setActiveTab}
         activeTab={activeTab}
+      />
+      <AddToPlaylistModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onAddToPlaylist={handleAddSongToPlaylist}
+        playlists={userPlaylists}
+        onCreateNewPlaylist={handleCreateNewPlaylist}
       />
     </View>
   );
