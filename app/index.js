@@ -13,6 +13,7 @@ import SongScreen from "../screens/HomeScreen/SongScreen";
 import PlaylistScreen from "../screens/HomeScreen/PlaylistScreen";
 import UserManagement from "../screens/UserManagement";
 import EditUser from "../screens/HomeScreen/Edit";
+import PlaylistDetail from "../screens/HomeScreen/PlaylistDetail"
 const Stack = createStackNavigator();
 const ADMIN_EMAIL = "admin@gmail.com"
    
@@ -53,6 +54,7 @@ export default function Index() {
       <Stack.Screen name="UserManagement" component ={UserManagement}/>
       <Stack.Screen name="LoginScreen" component ={LoginScreen}/>
       <Stack.Screen name="Edit" component ={EditUser}/>
+      <Stack.Screen name="PlaylistDetail" component={PlaylistDetail}/>
     </Stack.Navigator>
 
       );
