@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,23 +12,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../configs/firebaseConfig';
 import { useNavigation } from "@react-navigation/native";
-import { Audio } from 'expo-av';
 
 const PlaylistDetail = ({ route }) => {
   const { playlist } = route.params;
   const navigation = useNavigation();
-  const [sound, setSound] = useState(null);
-  const [currentSong, setCurrentSong] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Cleanup effect để unload sound khi rời khỏi màn hình
-  useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
 
   const handleRemoveSong = async (songToRemove) => {
     Alert.alert(
@@ -57,45 +44,8 @@ const PlaylistDetail = ({ route }) => {
     );
   };
 
-  const handlePlaySong = async (song) => {
-    try {
-      // Nếu đang phát một bài khác, dừng bài đó trước
-      if (sound) {
-        await sound.unloadAsync();
-      }
-
-      // Load và phát bài hát mới
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: song.url },
-        { shouldPlay: true }
-      );
-      
-      setSound(newSound);
-      setCurrentSong(song);
-      setIsPlaying(true);
-
-      // Xử lý khi bài hát kết thúc
-      newSound.setOnPlaybackStatusUpdate(async (status) => {
-        if (status.didJustFinish) {
-          setIsPlaying(false);
-        }
-      });
-
-    } catch (error) {
-      console.error("Error playing song:", error);
-      Alert.alert("Lỗi", "Không thể phát bài hát. Vui lòng thử lại!");
-    }
-  };
-
-  const handlePauseResume = async () => {
-    if (sound) {
-      if (isPlaying) {
-        await sound.pauseAsync();
-      } else {
-        await sound.playAsync();
-      }
-      setIsPlaying(!isPlaying);
-    }
+  const handlePlaySong = (song) => {
+    navigation.navigate('SongScreen', { song });
   };
 
   const renderSongItem = ({ item }) => (
@@ -108,26 +58,12 @@ const PlaylistDetail = ({ route }) => {
         <Text style={styles.songTitle}>{item.title}</Text>
         <Text style={styles.songArtist}>{item.artist}</Text>
       </View>
-      <View style={styles.buttonContainer}>
-        {currentSong?.id === item.id && (
-          <TouchableOpacity
-            style={styles.playButton}
-            onPress={handlePauseResume}
-          >
-            <Ionicons 
-              name={isPlaying ? "pause-circle" : "play-circle"} 
-              size={32} 
-              color="#dc6353" 
-            />
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity
-          style={styles.removeButton}
-          onPress={() => handleRemoveSong(item)}
-        >
-          <Ionicons name="remove-circle-outline" size={24} color="#dc6353" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={styles.removeButton}
+        onPress={() => handleRemoveSong(item)}
+      >
+        <Ionicons name="remove-circle-outline" size={24} color="#dc6353" />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 

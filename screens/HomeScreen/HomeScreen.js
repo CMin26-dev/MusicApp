@@ -194,18 +194,44 @@ useEffect(() => {
             await updateDoc(playlistRef, {
               songs: [...currentSongs, selectedSong]
             });
-            alert(`Đã thêm "${selectedSong.title}" vào playlist!`);
+            
+            // Thêm thông báo tự động tắt
+            Alert.alert(
+              "Thành công",
+              `Đã thêm "${selectedSong.title}" vào playlist!`,
+              [],
+              { 
+                cancelable: true,
+                timeout: 2000 // Tự động đóng sau 2 giây
+              }
+            );
+
+            // Đóng modal sau khi hiện thông báo
+            setTimeout(() => {
+              setModalVisible(false);
+              setSelectedSong(null);
+            }, 2000);
+
           } else {
-            alert("Bài hát đã có trong playlist!");
+            Alert.alert(
+              "Lưu ý",
+              "Bài hát đã có trong playlist!",
+              [{ text: "OK" }],
+              { cancelable: true }
+            );
+            setModalVisible(false);
+            setSelectedSong(null);
           }
         }
       } catch (error) {
         console.error("Error adding song to playlist:", error);
-        alert("Không thể thêm bài hát. Vui lòng thử lại!");
+        Alert.alert(
+          "Lỗi",
+          "Không thể thêm bài hát. Vui lòng thử lại!",
+          [{ text: "OK" }]
+        );
       }
     }
-    setModalVisible(false);
-    setSelectedSong(null);
   };
 
   const renderSongItem = ({ item }) => (
