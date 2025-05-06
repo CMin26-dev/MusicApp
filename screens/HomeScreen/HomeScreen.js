@@ -207,9 +207,9 @@ useEffect(() => {
               {[1, 2, 3, 4, 5].map((star) => (
                 <Ionicons
                   key={star}
-                  name={star <= Math.round(rating) ? 'star' : 'star-outline'}
+                  name={star <= Math.round(rating) ? 'heart' : 'heart-outline'}
                   size={16}
-                  color="#FFD700"
+                  color="#e74c3c"
                   style={styles.starIcon}
                 />
               ))}
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
     marginRight: 2,
   },
   ratingText: {
-    color: '#FFD700',
+    color:'#e74c3c',
     fontSize: 14,
     fontWeight: 'bold',
   },
