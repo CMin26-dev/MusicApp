@@ -4,16 +4,17 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  Dimensions,
   Animated,
   Easing,
+  Dimensions,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { getFirestore, doc, updateDoc, increment } from 'firebase/firestore';
 import { getApp } from 'firebase/app';
+import Slider from '@react-native-community/slider';
 
 const { width } = Dimensions.get('window');
 
@@ -23,7 +24,8 @@ const SongScreen = ({ route }) => {
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState(null);
-
+  const [sliderPosition, setSliderPosition] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
 
   const soundRef = useRef(null);
@@ -70,6 +72,9 @@ const SongScreen = ({ route }) => {
 
   const onPlaybackStatusUpdate = (status) => {
     setPlaybackStatus(status);
+    if (!isSeeking && status.isLoaded) {
+      setSliderPosition(status.positionMillis);
+    }
   };
 
   const handlePlayPause = async () => {
@@ -128,12 +133,7 @@ const SongScreen = ({ route }) => {
       {/* Rotating Song Image */}
       <Animated.Image
         source={{ uri: song.image }}
-        style={[
-          styles.image,
-          {
-            transform: [{ rotate: spin }],
-          },
-        ]}
+        style={[styles.image, { transform: [{ rotate: spin }] }]}
       />
 
       {/* Song Info */}
@@ -142,30 +142,39 @@ const SongScreen = ({ route }) => {
         <Text style={styles.songArtist}>{song.artist}</Text>
       </View>
 
-      {/* Progress */}
+      {/* Progress + Slider */}
       <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: playbackStatus
-                  ? `${(playbackStatus.positionMillis / playbackStatus.durationMillis) * 100}%`
-                  : '0%',
-              },
-            ]}
-          />
-        </View>
+        <Slider
+          style={{ width: '100%', height: 40 }}
+          minimumValue={0}
+          maximumValue={playbackStatus?.durationMillis || 1}
+          value={isSeeking ? sliderPosition : playbackStatus?.positionMillis || 0}
+          minimumTrackTintColor="#dc6353"
+          maximumTrackTintColor="#555"
+          thumbTintColor="#fff"
+          onValueChange={(value) => {
+            if (!isSeeking) setIsSeeking(true);
+            setSliderPosition(value);
+          }}
+          onSlidingComplete={async (value) => {
+            if (sound) {
+              try {
+                await sound.setPositionAsync(value);
+              } catch (err) {
+                console.log('Lỗi tua:', err);
+              }
+            }
+            setIsSeeking(false);
+          }}
+        />
         <View style={styles.progressTimes}>
           <Text style={styles.timeText}>
-            {playbackStatus
-              ? millisToMinutesAndSeconds(playbackStatus.positionMillis)
-              : '0:00'}
+            {millisToMinutesAndSeconds(
+              isSeeking ? sliderPosition : playbackStatus?.positionMillis || 0
+            )}
           </Text>
           <Text style={styles.timeText}>
-            {playbackStatus
-              ? millisToMinutesAndSeconds(playbackStatus.durationMillis)
-              : '0:00'}
+            {millisToMinutesAndSeconds(playbackStatus?.durationMillis || 0)}
           </Text>
         </View>
       </View>
@@ -182,10 +191,7 @@ const SongScreen = ({ route }) => {
         <Text style={styles.ratingLabel}>Bạn yêu thích bài hát này thế nào?</Text>
         <View style={styles.heartsRow}>
           {[1, 2, 3, 4, 5].map((rating) => (
-            <TouchableOpacity
-              key={rating}
-              onPress={() => handleRating(rating)}
-            >
+            <TouchableOpacity key={rating} onPress={() => handleRating(rating)}>
               <Ionicons
                 name={selectedRating >= rating ? 'heart' : 'heart-outline'}
                 size={32}
@@ -263,16 +269,6 @@ const styles = StyleSheet.create({
   progressContainer: {
     paddingHorizontal: 20,
     marginBottom: 10,
-  },
-  progressBar: {
-    height: 4,
-    backgroundColor: '#555',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: 4,
-    backgroundColor: '#dc6353',
   },
   progressTimes: {
     flexDirection: 'row',
