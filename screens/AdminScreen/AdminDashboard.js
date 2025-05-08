@@ -12,13 +12,14 @@ import UserManagement from '../../screens/UserManagement';
 
 export default function AdminDashboard() {
   const [songs, setSongs] = useState([]);
-  // const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [newTitle, setNewTitle] = useState('');
   const [newArtist, setNewArtist] = useState('');
   const [newGener, setNewGener] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
-  const ADMIN_EMAIL = "trancongminh260602@gmail.com";
+  const ADMIN_EMAIL = "admin@gmail.com";
+  
   const [selectedTab, setSelectedTab] = useState('songs');
 
   
@@ -160,7 +161,7 @@ const handleLogout = async () => {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.itemBox}>
-            <Text style={styles.itemText}>{item.title} - {item.artist} -{item.gener}</Text>
+            <Text style={styles.itemText}>{item.title}-{item.artist}-{item.gener}</Text>
             <View style={styles.row}>
               <TouchableOpacity onPress={() => {
                 setEditingId(item.id);
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins",
     color: "#fff",
     marginBottom: 20,
-    marginLeft: 100
+    marginLeft: 90
   },
   title: {
     fontSize: 28,
