@@ -263,7 +263,7 @@ useEffect(() => {
     const r3 = song.r3 || 0;
     const r4 = song.r4 || 0;
     const r5 = song.r5 || 0;
-    const totalRatings = 15;
+    const totalRatings = r1+r2+r3+r4+r5;
     
     const weightedSum = (r1 * 1) + (r2 * 2) + (r3 * 3) + (r4 * 4) + (r5 * 5);
     return weightedSum / totalRatings;
