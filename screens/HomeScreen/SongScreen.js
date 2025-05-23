@@ -12,8 +12,9 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
-import { getFirestore, doc, updateDoc, increment } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, increment, getDoc, setDoc } from 'firebase/firestore';
 import { getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import Slider from '@react-native-community/slider';
 
 const { width } = Dimensions.get('window');
@@ -31,9 +32,12 @@ const SongScreen = ({ route }) => {
   const soundRef = useRef(null);
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const db = getFirestore(getApp());
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
     loadSound();
+    fetchUserRating();
     return () => {
       if (soundRef.current) {
         soundRef.current.unloadAsync();
@@ -93,19 +97,44 @@ const SongScreen = ({ route }) => {
     navigation.goBack();
   };
 
-  const handleRating = async (rating) => {
-    const songRef = doc(db, 'songs', song.id);
-    const oldField = selectedRating ? `r${selectedRating}` : null;
-    const newField = `r${rating}`;
-
-    const updates = {};
-    if (oldField && oldField !== newField) {
-      updates[oldField] = increment(-1);
-    }
-    updates[newField] = increment(1);
-
+  const fetchUserRating = async () => {
     try {
-      await updateDoc(songRef, updates);
+      if (!userId) return;
+      const ratingDoc = doc(db, 'ratings', userId);
+      const ratingSnapshot = await getDoc(ratingDoc);
+      const ratingData = ratingSnapshot.data();
+
+      if (ratingData && ratingData[song.id]) {
+        setSelectedRating(ratingData[song.id]);
+      }
+    } catch (error) {
+      console.error('Lỗi khi tải đánh giá:', error);
+    }
+  };
+
+  const handleRating = async (rating) => {
+    if (selectedRating || !userId) return;
+
+    const songRef = doc(db, 'songs', song.id);
+    const ratingDocRef = doc(db, 'ratings', userId);
+
+    const ratingField = `r${rating}`;
+    try {
+      await updateDoc(songRef, {
+        [ratingField]: increment(1),
+      });
+
+      const ratingSnapshot = await getDoc(ratingDocRef);
+      if (ratingSnapshot.exists()) {
+        await updateDoc(ratingDocRef, {
+          [song.id]: rating,
+        });
+      } else {
+        await setDoc(ratingDocRef, {
+          [song.id]: rating,
+        });
+      }
+
       setSelectedRating(rating);
     } catch (error) {
       console.error('Lỗi khi cập nhật đánh giá:', error);
@@ -119,7 +148,6 @@ const SongScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
           <Ionicons name="chevron-down" size={28} color="#fff" />
@@ -130,19 +158,16 @@ const SongScreen = ({ route }) => {
         </View>
       </View>
 
-      {/* Rotating Song Image */}
       <Animated.Image
         source={{ uri: song.image }}
         style={[styles.image, { transform: [{ rotate: spin }] }]}
       />
 
-      {/* Song Info */}
       <View style={styles.songInfoContainer}>
         <Text style={styles.songTitle}>{song.title}</Text>
         <Text style={styles.songArtist}>{song.artist}</Text>
       </View>
 
-      {/* Progress + Slider */}
       <View style={styles.progressContainer}>
         <Slider
           style={{ width: '100%', height: 40 }}
@@ -169,9 +194,7 @@ const SongScreen = ({ route }) => {
         />
         <View style={styles.progressTimes}>
           <Text style={styles.timeText}>
-            {millisToMinutesAndSeconds(
-              isSeeking ? sliderPosition : playbackStatus?.positionMillis || 0
-            )}
+            {millisToMinutesAndSeconds(isSeeking ? sliderPosition : playbackStatus?.positionMillis || 0)}
           </Text>
           <Text style={styles.timeText}>
             {millisToMinutesAndSeconds(playbackStatus?.durationMillis || 0)}
@@ -179,19 +202,21 @@ const SongScreen = ({ route }) => {
         </View>
       </View>
 
-      {/* Only Play/Pause Button */}
       <View style={styles.controlsCenter}>
         <TouchableOpacity onPress={handlePlayPause} style={styles.playButton}>
           <Ionicons name={isPlaying ? 'pause' : 'play'} size={36} color="#000" />
         </TouchableOpacity>
       </View>
 
-      {/* Rating Hearts */}
       <View style={styles.ratingContainer}>
         <Text style={styles.ratingLabel}>Bạn yêu thích bài hát này thế nào?</Text>
         <View style={styles.heartsRow}>
           {[1, 2, 3, 4, 5].map((rating) => (
-            <TouchableOpacity key={rating} onPress={() => handleRating(rating)}>
+            <TouchableOpacity
+              key={rating}
+              onPress={() => handleRating(rating)}
+              disabled={!!selectedRating}
+            >
               <Ionicons
                 name={selectedRating >= rating ? 'heart' : 'heart-outline'}
                 size={32}
